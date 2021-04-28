@@ -3,7 +3,7 @@ package com.lv.study.lvwechat;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication()
+@SpringBootApplication
 public class LvwechatApplication {
 
     public static void main(String[] args) {

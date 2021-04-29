@@ -8,6 +8,7 @@ import org.dom4j.Element;
 import org.dom4j.Namespace;
 import org.dom4j.io.SAXReader;
 import org.hibernate.exception.DataException;
+import org.springframework.data.repository.query.Param;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,9 +40,10 @@ public class WXController {
             @ApiImplicitParam(name = "echoStr",value = "回复字段",required = true,dataType = "String",paramType = "query",example = "hello")}
     )
     @GetMapping("/acceptMessage")
-    public String checkWXDevelop(String signature,String timestamp,String nonce,String echoStr) {
+    public String checkWXDevelop(String signature,String timestamp,String nonce, String echostr) {
         if (checkAuthor(timestamp, nonce,signature)){
-            return echoStr;
+            log.info("echostr:{}",echostr);
+            return echostr;
         }else{
             return null;
         }

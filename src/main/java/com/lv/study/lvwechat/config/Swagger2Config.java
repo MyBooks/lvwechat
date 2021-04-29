@@ -27,8 +27,9 @@ public class Swagger2Config {
 
     private ApiInfo apiInfo() {
         return new ApiInfoBuilder()
-                .title("lvwechat项目RESTful APIs")
+                .title("lvwechat项目APIs")
                 .description("微信学习项目")
+                .contact("作者：吕孝强")
                 .version("0.0.1")
                 .build();
     }

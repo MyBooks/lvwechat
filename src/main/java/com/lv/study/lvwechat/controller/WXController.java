@@ -1,5 +1,9 @@
 package com.lv.study.lvwechat.controller;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
@@ -25,27 +29,44 @@ import java.util.List;
 @RestController
 @RequestMapping("/WX")
 @Slf4j
+@Api("微信消息分发入口")
 public class WXController {
 
     private String token  = "1997@LVlv";
 
-    @GetMapping("/checkWX")
-    public String checkWXDevelop(String signature,String timestamp,String nonce,String echostr) throws Exception {
+    @ApiOperation(value = "接受消息绑定接口",notes = "校验消息过程，将token和timestamp以及nonce混合按字母顺序排序，sha加密后与签名验证返回echoStr")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "signature",value = "参数签名",required = true,dataType = "String",paramType = "query"),
+            @ApiImplicitParam(name = "timestamp",value = "消息发送时间",required = true,dataType = "String",paramType = "query"),
+            @ApiImplicitParam(name = "nonce",value = "随机字符串",required = true,dataType = "String" ,paramType = "query"),
+            @ApiImplicitParam(name = "echoStr",value = "回复字段",required = true,dataType = "String",paramType = "query")}
+    )
+    @GetMapping("/acceptMessage")
+    public String checkWXDevelop(String signature,String timestamp,String nonce,String echoStr) throws Exception {
         if (checkAuthor(timestamp, nonce,signature)){
-            return echostr;
+            return echoStr;
         }else{
             return null;
         }
     }
 
+    @ApiOperation(value = "接收消息接口",notes = "校验消息过程，将token和timestamp以及nonce混合按字母顺序排序，sha加密后与签名验证返回echoStr")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "signature",value = "参数签名",required = true,dataType = "String"),
+            @ApiImplicitParam(name = "timestamp",value = "消息发送时间",required = true,dataType = "String"),
+            @ApiImplicitParam(name = "nonce",value = "随机字符串",required = true,dataType = "String"),
+            @ApiImplicitParam(name = "echoStr",value = "回复字段",required = false,dataType = "String")}
+    )
     @PostMapping("/checkWX")
     public String checkWXDevelopPost(String signature, String timestamp, String nonce, HttpServletRequest request,String ToUserName, HttpServletResponse httpServletResponse) throws Exception {
         if (checkAuthor(timestamp, nonce,signature)){
             SAXReader reader = new SAXReader();
             Document read = reader.read(request.getInputStream());
             Element rootElement = read.getRootElement();
+            // 消息转发处理
+
             Element element = rootElement.element("MsgType");
-            if ("text".equals(element.getText())) {
+            if("text".equals(element.getText())) {
                 Document document = DocumentHelper.createDocument();
                 Element xml = document.addElement("xml");
                 Element toUserName = xml.addElement("ToUserName");
@@ -68,29 +89,42 @@ public class WXController {
         }
     }
 
-    private boolean checkAuthor(String timestamp, String nonce,String signature) throws Exception {
-        StringBuffer stringBuffer = new StringBuffer();
-        log.info("timestamp:{}",new Date(Long.parseLong(timestamp)));
-        List<String> strings = Arrays.asList("1997@LVlv", nonce, timestamp);
-        strings.stream().sorted().forEach(e->{
-            stringBuffer.append(e);
-        });
-        String str = stringBuffer.toString();
-        String s = shaEncode(str);
-        return signature.equals(s);
+    /**
+     * 检验消息正确性
+     *
+     * @param timestamp 发送时间
+     * @param nonce 噪音
+     * @param signature 验证的签名
+     * @return boolean 消息是否为真
+     */
+    private boolean checkAuthor(String timestamp, String nonce,String signature) {
+        try{
+            StringBuffer stringBuffer = new StringBuffer();
+            log.info("消息发送时间 timestamp:{}",new Date(Long.parseLong(timestamp)));
+            List<String> strings = Arrays.asList("1997@LVlv", nonce, timestamp);
+            strings.stream().sorted().forEach(e->{
+                stringBuffer.append(e);
+            });
+            String s = shaEncode(stringBuffer.toString());
+            log.info("签名:{},加密值：{}",signature,s);
+            return signature.equals(s);
+        } catch (Exception e) {
+            log.error("消息加密失败",e);
+        }
+        return false;
     }
 
 
+    /**
+     * SHA加密
+     *
+     * @param inStr 加密的字符串
+     * @return String 加密后的字符串
+     * @throws Exception 加密异常
+     */
     public static String shaEncode(String inStr) throws Exception {
         MessageDigest sha = null;
-        try {
-            sha = MessageDigest.getInstance("SHA");
-        } catch (Exception e) {
-            System.out.println(e.toString());
-            e.printStackTrace();
-            return "";
-        }
-
+        sha = MessageDigest.getInstance("SHA");
         byte[] byteArray = inStr.getBytes("UTF-8");
         byte[] md5Bytes = sha.digest(byteArray);
         StringBuffer hexValue = new StringBuffer();

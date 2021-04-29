@@ -108,12 +108,19 @@ public class DruidConfig {
             druidDataSource.setFilters("config,stat,wall,slf4j");
             // 配置过滤器中的各种属性具体设可以看
             Properties properties = new Properties();
-            properties.setProperty("druid.stat.mergeSql","true");  // 合并多条相同sql
-            properties.setProperty("druid.stat.logSlowSql","true"); // 打印慢sql
-            properties.setProperty("druid.stat.slowSqlMillis","5000"); // 慢sql的标准
-            properties.setProperty("druid.sql.Statement","warn,stdout"); // 打印方式
-            properties.setProperty("config.decrypt","true"); //开启解密
-            properties.setProperty("druid.log.stmt.executableSql","true"); // 打开执行sql语句日志
+            // 合并多条相同sql
+            properties.setProperty("druid.stat.mergeSql","true");
+            // 打印慢sql
+            properties.setProperty("druid.stat.logSlowSql","true");
+            // 慢sql的标准
+            properties.setProperty("druid.stat.slowSqlMillis","5000");
+            // 打印方式
+            properties.setProperty("druid.sql.Statement","warn,stdout");
+            //开启解密
+            properties.setProperty("config.decrypt","true");
+            // 打开执行sql语句日志
+            properties.setProperty("druid.log.stmt.executableSql","true");
+            // 公钥
             properties.setProperty("config.decrypt.key","MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBANAWeH/6uyx8lgsZgKBhdtX97fmXzzjUM3/0Q6Zkj1oFS32TiJa8gkqlF0nyhkqJ5xj6AqjZa9tOf39RWIOkUCMCAwEAAQ==");
             druidDataSource.setConnectProperties(properties);
         } catch (Exception e) {

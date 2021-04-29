@@ -1,9 +1,6 @@
 package com.lv.study.lvwechat.controller;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
@@ -29,20 +26,20 @@ import java.util.List;
 @RestController
 @RequestMapping("/WX")
 @Slf4j
-@Api("微信消息分发入口")
+@Api(tags = "微信消息分发入口",value = "WXController")
 public class WXController {
 
     private String token  = "1997@LVlv";
 
     @ApiOperation(value = "接受消息绑定接口",notes = "校验消息过程，将token和timestamp以及nonce混合按字母顺序排序，sha加密后与签名验证返回echoStr")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "signature",value = "参数签名",required = true,dataType = "String",paramType = "query"),
-            @ApiImplicitParam(name = "timestamp",value = "消息发送时间",required = true,dataType = "String",paramType = "query"),
-            @ApiImplicitParam(name = "nonce",value = "随机字符串",required = true,dataType = "String" ,paramType = "query"),
-            @ApiImplicitParam(name = "echoStr",value = "回复字段",required = true,dataType = "String",paramType = "query")}
+            @ApiImplicitParam(name = "signature",value = "参数签名",required = true,dataType = "String",paramType = "query",example = "ea4481dd43830274d141c89b50e47248f93d81a9"),
+            @ApiImplicitParam(name = "timestamp",value = "消息发送时间",required = true,dataType = "String",paramType = "query", example="1619708401"),
+            @ApiImplicitParam(name = "nonce",value = "随机字符串",required = true,dataType = "String" ,paramType = "query",example = "akkFddqqwEq"),
+            @ApiImplicitParam(name = "echoStr",value = "回复字段",required = true,dataType = "String",paramType = "query",example = "hello")}
     )
     @GetMapping("/acceptMessage")
-    public String checkWXDevelop(String signature,String timestamp,String nonce,String echoStr) throws Exception {
+    public String checkWXDevelop(String signature,String timestamp,String nonce,String echoStr) {
         if (checkAuthor(timestamp, nonce,signature)){
             return echoStr;
         }else{
@@ -52,13 +49,12 @@ public class WXController {
 
     @ApiOperation(value = "接收消息接口",notes = "校验消息过程，将token和timestamp以及nonce混合按字母顺序排序，sha加密后与签名验证返回echoStr")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "signature",value = "参数签名",required = true,dataType = "String"),
-            @ApiImplicitParam(name = "timestamp",value = "消息发送时间",required = true,dataType = "String"),
-            @ApiImplicitParam(name = "nonce",value = "随机字符串",required = true,dataType = "String"),
-            @ApiImplicitParam(name = "echoStr",value = "回复字段",required = false,dataType = "String")}
+            @ApiImplicitParam(name = "signature",value = "参数签名",required = true,dataType = "String",example = "ea4481dd43830274d141c89b50e47248f93d81a9"),
+            @ApiImplicitParam(name = "timestamp",value = "消息发送时间",required = true,dataType = "String",example = "1619708401"),
+            @ApiImplicitParam(name = "nonce",value = "随机字符串",required = true,dataType = "String",example = "akkFddqqwEq")}
     )
-    @PostMapping("/checkWX")
-    public String checkWXDevelopPost(String signature, String timestamp, String nonce, HttpServletRequest request,String ToUserName, HttpServletResponse httpServletResponse) throws Exception {
+    @PostMapping("/acceptMessage")
+    public String checkWXDevelopPost(String signature, String timestamp, String nonce, @ApiParam(hidden = true) HttpServletRequest request) throws Exception {
         if (checkAuthor(timestamp, nonce,signature)){
             SAXReader reader = new SAXReader();
             Document read = reader.read(request.getInputStream());
